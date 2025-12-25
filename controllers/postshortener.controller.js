@@ -19,8 +19,9 @@ export const getShortenerPage = async (req, res) => {
     //     ?.split("=")[1]
     // );
 
+    // console.log("🚀 ~ getShortenerPage ~ isLoggedIn:", isLoggedIn);
+
     let isLoggedIn = req.cookies.isLoggedIn;
-    console.log("🚀 ~ getShortenerPage ~ isLoggedIn:", isLoggedIn);
 
     return res.render("index", { links, host: req.host, isLoggedIn });
   } catch (error) {
