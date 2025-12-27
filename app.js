@@ -1,7 +1,9 @@
+import "./bootstrap.js"; // 👈 MUST BE FIRST LINE
 import express from "express";
 import { shortenerRoutes } from "./routes/shortener.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import cookieParser from "cookie-parser";
+import {verifyAuthentication} from "./middleware/verify-auth-middleware.js";
 
 const app = express();
 
@@ -13,11 +15,13 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 // app.set("views", "./views")
 app.use(cookieParser());
+app.use(verifyAuthentication);
 
 // express router
 // app.use(router);
 app.use(authRoutes);
 app.use(shortenerRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
