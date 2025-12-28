@@ -10,7 +10,7 @@ export const verifyAuthentication = (req, res, next) => {
 
   try {
     const decodedToken = verifyJWTToken(token);
-    req.user = decodedToken;
+    req.user = decodedToken;    // req.user is property created by us to store user info
     console.log("Decoded Token:", decodedToken);
   } catch (error) {
     req.user = null;

@@ -44,19 +44,26 @@ export const postLogin = async (req, res) => {
   // if (user.password !== password) return res.redirect("/login");
   if (!isPasswordValid) return res.redirect("/login");
 
-  res.cookie("isLoggedIn", true);
-  // res.cookie("isLoggedIn", true);
+  // res.cookie("isLoggedIn", true);  // simple cookie without any security
 
-  const token = generateToken({
+  const token = generateToken({         // jwt token generation
     id: user.id,
     name: user.name,
     email: user.email,
   });
 
-  res.cookie("access_token", token);
+  res.cookie("access_token", token);     //the token is set as cookie in the browser
 
   res.redirect("/");
 };
 
 // Do You Need to Set Path=/ Manually?
 //    ✅ cookie-parser and Express automatically set the path to / by default.
+
+export const getMe = (req, res) => {
+  if (!req.user) return res.send("Not logged in");
+
+  return res.send(
+    `<h1>Hey ${req.user.name} - ${req.user.email}</h1>`
+  );
+};
