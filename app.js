@@ -3,6 +3,8 @@ import express from "express";
 import { shortenerRoutes } from "./routes/shortener.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import cookieParser from "cookie-parser";
+import session from "express-session";
+import flash from "connect-flash";
 import {verifyAuthentication} from "./middleware/verify-auth-middleware.js";
 
 const app = express();
@@ -17,8 +19,13 @@ app.set("view engine", "ejs");
 
 app.use(cookieParser());
 
+app.use(
+  session({ secret: "my-secret", resave: true, saveUninitialized: false })      // session middleware is needed to store data in session
+);
+app.use(flash());     // flash middleware is needed for flash messages
+
 // This must be after cookieParser middleware.
-app.use(verifyAuthentication);
+app.use(verifyAuthentication);      // to set req.user if token is valid on every request
 
 
 // How It Works:
