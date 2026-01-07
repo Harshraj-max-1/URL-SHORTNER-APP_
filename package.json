@@ -28,6 +28,7 @@
     "flash": "^1.1.0",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.16.0",
+    "request-ip": "^3.3.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {

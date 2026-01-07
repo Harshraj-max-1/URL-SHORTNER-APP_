@@ -1,31 +1,51 @@
 import {
+  ACCESS_TOKEN_EXPIRY,
+  REFRESH_TOKEN_EXPIRY,
+} from "../config/constants.js";
+import {
   comparePassword,
+  createAccessToken,
+  createRefreshToken,
+  createSession,
   createUser,
-  generateToken,
+  // generateToken,
   getUserByEmail,
   hashPassword,
 } from "../services/auth.services.js";
+import {
+  loginUserSchema,
+  registerUserSchema,
+} from "../validators/auth-validator.js";
 
 export const getRegisterPage = (req, res) => {
   if (req.user) return res.redirect("/");
-  return res.render("../views/auth/register", {
-    errors: req.flash("errors")   // retrieve messages from session 
- });
+
+  return res.render("../views/auth/register", { errors: req.flash("errors") });
 };
 
+// when the user register and click on register button
 export const postRegister = async (req, res) => {
   if (req.user) return res.redirect("/");
+
   // console.log(req.body);
-  const { name, email, password } = req.body;
+  // const { name, email, password } = req.body;
+  const { data, error } = registerUserSchema.safeParse(req.body);
+
+  if (error) {
+    const errorMessage = error.errors[0].message;
+    req.flash("errors", errorMessage);
+    return res.redirect("/");
+  }
+
+  const { name, email, password } = data;
 
   const userExists = await getUserByEmail(email);
   console.log("userExists ", userExists);
 
-  // if (userExists) return res.redirect("/register");
-
-  if (userExists) {                       
-  req.flash("errors", "User already exists");   //stored message in session(type , message)
-  return res.redirect("/register");
+  // if (userExists)  return res.redirect("/register");
+  if (userExists) {
+    req.flash("errors", "User already exists");
+    return res.redirect("/register");
   }
 
   const hashedPassword = await hashPassword(password);
@@ -38,41 +58,77 @@ export const postRegister = async (req, res) => {
 
 export const getLoginPage = (req, res) => {
   if (req.user) return res.redirect("/");
-  // return res.render("auth/login");
+
   return res.render("auth/login", { errors: req.flash("errors") });
 };
 
 export const postLogin = async (req, res) => {
   if (req.user) return res.redirect("/");
-  const { email, password } = req.body;
+
+  // const { email, password } = req.body;
+  const { data, error } = loginUserSchema.safeParse(req.body);
+
+  if (error) {
+    const errorMessage = error.errors[0].message;
+    req.flash("errors", errorMessage);
+    return res.redirect("/");
+  }
+
+  const { email, password } = data;
 
   const user = await getUserByEmail(email);
-  console.log("user ", user);
+  console.log("user email", user);
 
-  // if (!user) return res.redirect("/login");
-  if (!user) {                              // user not found
+  if (!user) {
     req.flash("errors", "Invalid Email or Password");
     return res.redirect("/login");
   }
+
   //todo bcrypt.compare(plainTextPassword, hashedPassword);
   const isPasswordValid = await comparePassword(password, user.password);
 
   // if (user.password !== password) return res.redirect("/login");
-  // if (!isPasswordValid) return res.redirect("/login");
   if (!isPasswordValid) {
     req.flash("errors", "Invalid email or password");
     return res.redirect("/login");
   }
 
-  // res.cookie("isLoggedIn", true);  // simple cookie without any security
+  // res.cookie("isLoggedIn", true);
 
-  const token = generateToken({         // jwt token generation
+  // const token = generateToken({
+  //   id: user.id,
+  //   name: user.name,
+  //   email: user.email,
+  // });
+
+  // res.cookie("access_token", token);
+
+  // we need to create a sessions
+  const session = await createSession(user.id, {
+    ip: req.clientIp,
+    userAgent: req.headers["user-agent"],
+  });
+
+  const accessToken = createAccessToken({
     id: user.id,
     name: user.name,
     email: user.email,
+    sessionId: session.id,
   });
 
-  res.cookie("access_token", token);     //the token is set as cookie in the browser
+  const refreshToken = createRefreshToken(session.id);
+
+  const baseConfig = { httpOnly: true, secure: true };
+
+  res.cookie("access_token", accessToken, {
+    ...baseConfig,
+    maxAge: ACCESS_TOKEN_EXPIRY,
+  });
+
+  res.cookie("refresh_token", refreshToken, {
+    ...baseConfig,
+    maxAge: REFRESH_TOKEN_EXPIRY,
+  });
 
   res.redirect("/");
 };
@@ -82,14 +138,10 @@ export const postLogin = async (req, res) => {
 
 export const getMe = (req, res) => {
   if (!req.user) return res.send("Not logged in");
-
-  return res.send(
-    `<h1>Hey ${req.user.name} - ${req.user.email}</h1>`
-  );
+  return res.send(`<h1>Hey ${req.user.name} - ${req.user.email}</h1>`);
 };
 
-export const logoutUser = (req , res  ) => {
+export const logoutUser = (req, res) => {
   res.clearCookie("access_token");
-  return res.redirect("/login");
+  res.redirect("/login");
 };
-
