@@ -1,29 +1,72 @@
-import { verifyJWTToken } from "../services/auth.services.js";
+import { refreshTokens, verifyJWTToken } from "../services/auth.services.js";
+import { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from "../config/constants.js";
 
-export const verifyAuthentication = (req, res, next) => {
-  const token = req.cookies.access_token;  // get token from cookies for each request
+// export const verifyAuthentication = (req, res, next) => {
+//   const token = req.cookies.access_token;
+//   if (!token) {
+//     req.user = null;
+//     return next();
+//   }
 
-  if (!token) {
-    req.user = null;
+//   try {
+//     const decodedToken = verifyJWTToken(token);
+//     req.user = decodedToken;
+//     console.log(`req.user:`, req.user);
+//   } catch (error) {
+//     req.user = null;
+//   }
+
+//   return next();
+// };
+
+// ✔️ You can add any property to req, but:
+
+// Avoid overwriting existing properties.
+// Use req.user for authentication.
+// Group custom properties under req.custom if needed.
+// Keep the data lightweight.
+
+export const verifyAuthentication = async (req, res, next) => {
+  const accessToken = req.cookies.access_token;
+  const refreshToken = req.cookies.refresh_token;
+
+  req.user = null;
+
+  if (!accessToken && !refreshToken) {
     return next();
   }
 
-  try {
-    const decodedToken = verifyJWTToken(token);
-    req.user = decodedToken;    // req.user is property created by us to store user info
-    console.log("Decoded Token:", decodedToken);
-  } catch (error) {
-    req.user = null;
+  if (accessToken) {
+    const decodedToken = verifyJWTToken(accessToken);
+    req.user = decodedToken;
+    return next();
+  }
+
+  if (refreshToken) {
+    try {
+      const { newAccessToken, newRefreshToken, user } = await refreshTokens(
+        refreshToken
+      );
+
+      req.user = user;
+
+      const baseConfig = { httpOnly: true, secure: true };
+
+      res.cookie("access_token", newAccessToken, {
+        ...baseConfig,
+        maxAge: ACCESS_TOKEN_EXPIRY,
+      });
+
+      res.cookie("refresh_token", newRefreshToken, {
+        ...baseConfig,
+        maxAge: REFRESH_TOKEN_EXPIRY,
+      });
+
+      return next();
+    } catch (error) {
+      console.log(error.message);
+    }
   }
 
   return next();
 };
-
-// verifyAuthentication is a middleware because:
-
-// 👉 It is a function with the signature (req, res, next)
-// 👉 It runs before routes
-// 👉 It does not end the request–response cycle
-// 👉 It calls next()
-
-// That is exactly what makes a function a middleware in Express.
