@@ -9,18 +9,22 @@ const router = Router();
 
 router
   .route("/register")
-  .get(authControllers.getRegisterPage)
-  .post(authControllers.postRegister);
+  .get(authControllers.getRegisterPage) // when the user visit register page
+  .post(authControllers.postRegister);   // when the user register and click on register button
 
 router
   .route("/login")
-  .get(authControllers.getLoginPage)
-  .post(authControllers.postLogin);
+  .get(authControllers.getLoginPage)  // when the user visit login page
+  .post(authControllers.postLogin);   // when the user login and click on login button
 
 router.route("/me")
-      .get(authControllers.getMe);
+      .get(authControllers.getMe);  // to get the details of logged in user
 
 router.route("/logout")
-      .get(authControllers.logoutUser);
+      .get(authControllers.logoutUser); // when user click on the logout button 
 
 export const authRoutes = router;
+
+
+
+// all functions si in auth.contoller.js

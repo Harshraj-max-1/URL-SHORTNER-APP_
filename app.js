@@ -1,3 +1,4 @@
+import "./bootstrap.js"; // 👈 MUST BE FIRST LINE
 import cookieParser from "cookie-parser";
 import express from "express";
 import flash from "connect-flash";

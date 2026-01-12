@@ -21,14 +21,14 @@ export const getUserByEmail = async (email) => {
   return user;
 };
 
-export const createUser = async ({ name, email, password }) => {
+export const createUser = async ({ name, email, password }) => {    //insert a user data inside userTable
   return await db
     .insert(usersTable)
     .values({ name, email, password })
     .$returningId();
 };
 
-export const hashPassword = async (password) => {
+export const hashPassword = async (password) => {         
   // return await bcrypt.hash(password, 10);
   return await argon2.hash(password);
 };
@@ -47,7 +47,7 @@ export const comparePassword = async (password, hash) => {
 export const createSession = async (userId, { ip, userAgent }) => {
   const [session] = await db
     .insert(sessionsTable)
-    .values({ userId, ip, userAgent })
+    .values({ userId, ip, userAgent })      // userId in session from session table is used to find user's data from userTable
     .$returningId();
 
   return session;
@@ -60,18 +60,19 @@ export const createAccessToken = ({ id, name, email, sessionId }) => {
   });
 };
 
-export const createRefreshToken = (sessionId) => {
+// createRefereshToken
+export const createRefreshToken = (sessionId) => {    // sessionId => session => userId => user 
   return jwt.sign({ sessionId }, process.env.JWT_SECRET, {
     expiresIn: REFRESH_TOKEN_EXPIRY / MILLISECONDS_PER_SECOND, //   expiresIn: "1w",
   });
 };
 
-// verifyJWTToken
+//verifyJWTToken
 export const verifyJWTToken = (token) => {
   return jwt.verify(token, process.env.JWT_SECRET);
 };
 
-// /findSessionById
+//findSessionById
 export const findSessionById = async (sessionId) => {
   const [session] = await db
     .select()
@@ -159,3 +160,8 @@ export const authenticateUser = async ({ req, res, user, name, email }) => {
     maxAge: REFRESH_TOKEN_EXPIRY,
   });
 };
+
+
+
+
+// all imp functions are there 
