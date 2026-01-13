@@ -21,7 +21,7 @@ export const verifyAuthentication = async (req, res, next) => {
     try {
       const { newAccessToken, newRefreshToken, user } = await refreshTokens(
         refreshToken
-      );
+      );   
 
       req.user = user;
 
