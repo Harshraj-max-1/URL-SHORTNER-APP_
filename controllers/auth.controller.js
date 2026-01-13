@@ -10,11 +10,14 @@ import {
   createRefreshToken,
   createSession,
   createUser,
+  createVerifyEmailLink,
   findUserById,
+  generateRandomToken,
   getAllShortLinks,
   // generateToken,
   getUserByEmail,
   hashPassword,
+  insertVerifyEmailToken,
 } from "../services/auth.services.js";
 import {
   loginUserSchema,
@@ -147,8 +150,40 @@ export const getProfilePage = async (req, res) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      isEmailValid: user.isEmailValid,
       createdAt: user.createdAt,
       links: userShortLinks,
     },
+  });
+};
+
+//getVerifyEmailPage
+export const getVerifyEmailPage = async (req, res) => {
+  // if (!req.user || req.user.isEmailValid) return res.redirect("/");
+
+  if (!req.user) return res.redirect("/");
+
+  const user = await findUserById(req.user.id);
+
+  if (!user || user.isEmailValid) return res.redirect("/");
+
+  return res.render("auth/verify-email", {
+    email: req.user.email,
+  });
+};
+
+//resendVerificationLink
+export const resendVerificationLink = async (req, res) => {
+  if (!req.user) return res.redirect("/");
+  const user = await findUserById(req.user.id);
+  if (!user || user.isEmailValid) return res.redirect("/");
+
+  const randomToken = generateRandomToken();
+
+  await insertVerifyEmailToken({ userId: req.user.id, token: randomToken });
+
+  const verifyEmailLink = await createVerifyEmailLink({
+    email: req.user.email,
+    token: randomToken,
   });
 };

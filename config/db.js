@@ -9,7 +9,7 @@ const pool = mysql.createPool({
   host: "localhost",
   user: "root",
   password: "Hraj18199@",
-  database: "drizzle_yt_db",
+  database: "node_auth_mysql",
 });
 
 export const db = drizzle(pool);
