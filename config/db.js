@@ -5,7 +5,7 @@
 import mysql from "mysql2/promise";
 import { drizzle } from "drizzle-orm/mysql2";
 
-const pool = mysql.createPool({
+const pool = mysql.createPool({       //This code connects your Node.js backend to a MySQL database
   host: "localhost",
   user: "root",
   password: "Hraj18199@",

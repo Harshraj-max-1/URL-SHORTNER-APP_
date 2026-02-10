@@ -103,13 +103,16 @@
                     >
                       <i class="zmdi zmdi-copy"></i>
                     </button>
-
+ <!-- as each link has unique id, we can use it to edit the link  -->
+                    
                     <button class="copy-btn edit-btn">
-                      <a href="/edit/<%= id %>">
+                      <!-- get request  to /edit/:id route -->
+                      <a href="/edit/<%= id %>">            
                         <i class="zmdi zmdi-edit"></i>
                       </a>
                     </button>
 
+                    <!-- post request to /delete/:id route to delete the link -->
                     <form action="/delete/<%= id %>" method="post">
                       <button class="copy-btn edit-btn">
                         <i class="zmdi zmdi-delete"></i>

@@ -24,15 +24,17 @@ app.use(cookieParser());
 
 app.use(
   session({ secret: "my-secret", resave: true, saveUninitialized: false })
-);
+);          //resave = true: save session even if not modified
+            //saveUninitialized = false: don't create session until something stored
+            //seceret: used to sign the session ID cookie
 app.use(flash());
 
 app.use(requestIp.mw());
 
 // This must be after cookieParser middleware.
-app.use(verifyAuthentication);
+app.use(verifyAuthentication);    // set req.user if authenticated
 
-app.use((req, res, next) => {
+app.use((req, res, next) => {     // custom middleware to make user available in all views
   res.locals.user = req.user;
   return next();
 });
