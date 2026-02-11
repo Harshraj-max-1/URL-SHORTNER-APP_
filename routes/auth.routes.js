@@ -25,10 +25,9 @@ router.route("/verify-email").get(authControllers.getVerifyEmailPage);
 
 router
   .route("/resend-verification-link")
-  .post(authControllers.resendVerificationLink);      //on clicking on Resendverificationlink button on /resendverificationlink route a post request is submitted and we got token and verification link(have token and email both) send by nodemailer/Resend .
+  .post(authControllers.resendVerificationLink);
 
-router.route("/verify-email-token").get(authControllers.verifyEmailToken);    //on clicking on the link in email a get request is sent to this route with token and email as query parameters
-                                                                              //on clicking on verify Code button on /verify-email page a get request is sent to this route with token and email as query parameters
+router.route("/verify-email-token").get(authControllers.verifyEmailToken);
 
 router
   .route("/edit-profile")
@@ -36,18 +35,18 @@ router
   .post(authControllers.postEditProfile);
 
 router
-  .route("/change-password")    //done
+  .route("/change-password")
   .get(authControllers.getChangePasswordPage)
   .post(authControllers.postChangePassword);
 
 router
-  .route("/reset-password") // done
+  .route("/reset-password")
   .get(authControllers.getResetPasswordPage)
   .post(authControllers.postForgotPassword);
 
 router
-  .route("/reset-password/:token")  
-  .get(authControllers.getResetPasswordTokenPage) // done
+  .route("/reset-password/:token")
+  .get(authControllers.getResetPasswordTokenPage)
   .post(authControllers.postResetPasswordToken);
 
 router.route("/google").get(authControllers.getGoogleLoginPage);
@@ -56,7 +55,11 @@ router.route("/google/callback").get(authControllers.getGoogleLoginCallback);
 router.route("/github").get(authControllers.getGithubLoginPage);
 router.get("/github/callback", authControllers.getGithubLoginCallback);
 
+router
+  .route("/set-password")
+  .get(authControllers.getSetPasswordPage)
+  .post(authControllers.postSetPassword);
+
 router.route("/logout").get(authControllers.logoutUser);
 
 export const authRoutes = router;
-
