@@ -8,16 +8,34 @@ import {
   updateShortCode,
 } from "../services/shortener.services.js";
 import z from "zod";
+import {
+  shortenerSchema,
+  shortenerSearchParamsSchema,
+} from "../validators/shortener-validator.js";
 
 export const getShortenerPage = async (req, res) => {
   try {
     if (!req.user) return res.redirect("/login");
 
-    const links = await getAllShortLinks(req.user.id);
+    const searchParams = shortenerSearchParamsSchema.parse(req.query);
+
+    // const links = await getAllShortLinks(req.user.id);
+    const { shortLinks, totalCount } = await getAllShortLinks({
+      userId: req.user.id,
+      limit: 10,
+      offset: (searchParams.page - 1) * 10,
+    });
+
+    console.log("searchParams: ", searchParams.page);
+
+    // totalCount = 100
+    const totalPages = Math.ceil(totalCount / 10);
 
     return res.render("index", {
-      links,
+      links: shortLinks,
       host: req.host,
+      currentPage: searchParams.page,
+      totalPages: totalPages,
       errors: req.flash("errors"),
     });
   } catch (error) {
@@ -30,7 +48,19 @@ export const postURLShortener = async (req, res) => {
   try {
     if (!req.user) return res.redirect("/login");
 
-    const { url, shortCode } = req.body;
+    // const { url, shortCode } = req.body;
+
+    const { data, error } = shortenerSchema.safeParse(req.body);
+    console.log(data, error);
+
+    if (error) {
+      const errorMessage = error.errors[0].message;
+      req.flash("errors", errorMessage);
+      return res.redirect("/");
+    }
+
+    const { url, shortCode } = data;
+
     const finalShortCode = shortCode || crypto.randomBytes(4).toString("hex");
 
     // const links = await loadLinks();

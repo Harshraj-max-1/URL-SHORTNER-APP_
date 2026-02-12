@@ -45,36 +45,6 @@ export const verifyEmailTokensTable = mysqlTable("is_email_valid", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const usersTable = mysqlTable("users", {
-  id: int().autoincrement().primaryKey(),
-  name: varchar({ length: 255 }).notNull(),
-  email: varchar({ length: 255 }).notNull().unique(),
-  password: varchar({ length: 255 }).notNull(),
-  isEmailValid: boolean("is_email_valid").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
-});
-
-// A user can have many short links
-export const usersRelation = relations(usersTable, ({ many }) => ({
-  shortLink: many(shortLinksTable),
-  session: many(sessionsTable),
-}));
-// A short link belongs to a user
-export const shortLinksRelation = relations(shortLinksTable, ({ one }) => ({
-  user: one(usersTable, {
-    fields: [shortLinksTable.userId], //foreign key
-    references: [usersTable.id],
-  }),
-}));
-
-export const sessionsRelation = relations(sessionsTable, ({ one }) => ({
-  user: one(usersTable, {
-    fields: [sessionsTable.userId], // foreign key
-    references: [usersTable.id],
-  }),
-}));
- 
 //passwordResetTokensTable
 export const passwordResetTokensTable = mysqlTable("password_reset_tokens", {
   id: int("id").autoincrement().primaryKey(),
@@ -101,3 +71,34 @@ export const oauthAccountsTable = mysqlTable("oauth_accounts", {
     .unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const usersTable = mysqlTable("users", {
+  id: int().autoincrement().primaryKey(),
+  name: varchar({ length: 255 }).notNull(),
+  email: varchar({ length: 255 }).notNull().unique(),
+  password: varchar({ length: 255 }),
+  avatarUrl: text("avatar_url"),
+  isEmailValid: boolean("is_email_valid").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+// A user can have many short links
+export const usersRelation = relations(usersTable, ({ many }) => ({
+  shortLink: many(shortLinksTable),
+  session: many(sessionsTable),
+}));
+// A short link belongs to a user
+export const shortLinksRelation = relations(shortLinksTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [shortLinksTable.userId], //foreign key
+    references: [usersTable.id],
+  }),
+}));
+
+export const sessionsRelation = relations(sessionsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [sessionsTable.userId], // foreign key
+    references: [usersTable.id],
+  }),
+}));
