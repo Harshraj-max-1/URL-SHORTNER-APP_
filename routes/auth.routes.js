@@ -1,4 +1,6 @@
 import { Router } from "express";
+import multer from "multer";
+import path from "path";
 import * as authControllers from "../controllers/auth.controller.js";
 
 const router = Router();
@@ -29,10 +31,35 @@ router
 
 router.route("/verify-email-token").get(authControllers.verifyEmailToken);
 
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads/avatar");
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}_${Math.random()}${ext}`);
+  },
+});
+
+const avatarFileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed!"), false);
+  }
+};
+
+const avatarUpload = multer({
+  storage: avatarStorage,
+  fileFilter: avatarFileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5mb
+});
+
 router
   .route("/edit-profile")
   .get(authControllers.getEditProfilePage)
-  .post(authControllers.postEditProfile);
+  .post(avatarUpload.single("avatar"), authControllers.postEditProfile);  //avatar name ka input field se file upload hoga public/uploads me, aur uske baad postEditProfile controller call hoga, jisme hum fileUrl ko database me save karenge, aur agar user ne avatar upload nahi kiya hai to fileUrl undefined hoga, aur hum us case me database me existing avatarUrl ko hi save kar denge, is tarah se user apna profile update kar sakta hai bina avatar change kiye huye bhi.
+// .post(authControllers.postEditProfile);
 
 router
   .route("/change-password")

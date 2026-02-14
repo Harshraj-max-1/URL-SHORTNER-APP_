@@ -252,6 +252,7 @@ export const getEditProfilePage = async (req, res) => {
 
   return res.render("auth/edit-profile", {
     name: user.name,
+    avatarUrl: user.avatarUrl,    //user Table contains avatarUrl, so we can directly get avatar url from user table and pass it to edit profile page 
     errors: req.flash("errors"),
   });
 };
@@ -268,7 +269,15 @@ export const postEditProfile = async (req, res) => {
     return res.redirect("/edit-profile");
   }
 
-  await updateUserByName({ userId: req.user.id, name: data.name });
+  // await updateUserByName({ userId: req.user.id, name: data.name });
+
+  const fileUrl = req.file ? `uploads/avatar/${req.file.filename}` : undefined;
+
+  await updateUserByName({
+    userId: req.user.id,
+    name: data.name,    // we can update name and avatar both in the same query, if fileUrl is undefined then avatarUrl will not be updated in database, and if fileUrl is having value then avatarUrl will be updated in database with new value
+    avatarUrl: fileUrl,
+  });
 
   return res.redirect("/profile");
 };
